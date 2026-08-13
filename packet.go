@@ -1,0 +1,152 @@
+package libav
+
+/*
+#cgo pkg-config: libavcodec libavformat libavutil
+#include <libavcodec/packet.h>
+#include <libavcodec/codec_par.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/rational.h>
+#include <libavutil/error.h>
+#include <string.h>
+#include "libtranscode.h"
+
+static inline const char *av_err2str_wrapper(int errnum) { return av_err2str(AVERROR(errnum)); }
+*/
+import "C"
+
+import (
+	"sync/atomic"
+	"unsafe"
+)
+
+type Packet struct {
+	inner *C.AVPacket
+	data  []byte
+	id    int
+}
+
+var global_id atomic.Int32
+
+func NewPacket(data []byte, pts uint64, is_key_frame bool) (Packet, error) {
+	id := int(global_id.Add(1))
+
+	av_pkt := C.av_packet_alloc()
+	if av_pkt == nil {
+		return Packet{}, ErrOOM
+	}
+
+	av_pkt.data = (*C.uint8_t)(unsafe.Pointer(&data[0]))
+
+	av_pkt.size = C.int(len(data))
+	av_pkt.pts = (C.int64_t)(pts)
+	av_pkt.dts = av_pkt.pts
+
+	if is_key_frame {
+		av_pkt.flags |= C.AV_PKT_FLAG_KEY
+	}
+	// fmt.Println("new packet with id ", id)
+	return Packet{av_pkt, data, id}, nil // hold the data so that the gc can track it
+}
+
+func NewPacketRef(avpkt unsafe.Pointer) (Packet, error) {
+	id := int(global_id.Add(1))
+	pkt := C.av_packet_clone((*C.AVPacket)(avpkt))
+	if pkt == nil {
+		return Packet{}, ErrOOM
+	}
+	// fmt.Println("new packet with id ", id)
+	return Packet{inner: pkt, id: id}, nil
+}
+func WrapAVPacket(avpkt unsafe.Pointer) Packet {
+	return Packet{inner: (*C.AVPacket)(avpkt), data: []byte{}, id: 0}
+}
+
+func (p *Packet) Ref() (Packet, error) {
+	id := int(global_id.Add(1))
+	pkt := C.av_packet_clone(p.AVPacket())
+	if pkt == nil {
+		return Packet{}, ErrOOM
+	}
+	// fmt.Println("new packet with id ", id)
+	return Packet{inner: pkt, id: id}, nil
+}
+
+func (p *Packet) Unref() {
+	// fmt.Println("unrefing packet ", p.id)
+	C.av_packet_unref(p.inner)
+}
+
+func (p *Packet) AVPacket() *C.AVPacket {
+	return p.inner
+}
+
+func (p*Packet) Inner () unsafe.Pointer{
+	return unsafe.Pointer(p.inner)
+}
+
+func (p *Packet) Free() {
+	// fmt.Println("freeing packet ", p.id)
+	C.av_packet_free(&p.inner)
+}
+
+func (p *Packet) Data() []byte {
+	return unsafe.Slice((*byte)(p.inner.data), p.inner.size)
+}
+
+func (p *Packet) Pts() int64 {
+	return int64(p.inner.pts)
+}
+
+func (p *Packet) SetPts(pts int64) {
+	p.inner.pts = (C.int64_t)(pts)
+}
+func (p *Packet) SetDts(dts int64) {
+	p.inner.dts = (C.int64_t)(dts)
+}
+
+func (p *Packet) StreamIndex(index int) {
+	p.inner.stream_index = (C.int)(index)
+}
+
+func (p *Packet) GetStreamIndex() int {
+	return (int)(p.inner.stream_index)
+}
+
+func (p *Packet) IskeyFrame() bool {
+	return (p.inner.flags & C.AV_PKT_FLAG_KEY) != 0
+}
+
+// a * b / c
+func (p *Packet) Rescale(b, c int64) {
+	p.inner.pts = C.av_rescale(p.inner.pts, C.int64_t(b), C.int64_t(c))
+	p.inner.dts = p.inner.pts
+}
+
+func (p *Packet) RescaleQ(b, c Rational) {
+	p.inner.pts = C.av_rescale_q(p.inner.pts, b.AVRational(), c.AVRational())
+	p.inner.dts = p.inner.pts
+}
+
+func (p *Packet) Duration() int64 {
+	return int64(p.inner.duration)
+}
+func (p *Packet) SetDuration(d int64) {
+	p.inner.duration = C.int64_t(d)
+}
+
+func (p *Packet) IsValid() bool {
+	return !p.IsEAgain() && !p.IsEof()
+}
+
+func (p *Packet) IsEAgain() bool {
+	return p.inner == nil
+}
+
+func (p *Packet) IsEof() bool {
+	return uintptr(unsafe.Pointer(p.inner)) == ^uintptr(0)
+}
+
+func (p *Packet) Dts() int64 {
+	return int64(p.inner.dts)
+}
