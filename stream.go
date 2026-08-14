@@ -18,33 +18,9 @@ import "unsafe"
 type Stream struct {
 	inner *C.AVStream
 }
-type CodecParameters struct {
-	inner *C.AVCodecParameters
-}
 
-func NewCodecParamters(params unsafe.Pointer) CodecParameters {
-	return CodecParameters{(*C.AVCodecParameters)(params)}
-}
-
-func (c *CodecParameters) IsCodecTypeVideo() bool {
-	return c.inner.codec_type == C.AVMEDIA_TYPE_VIDEO
-}
-
-func (c *CodecParameters) IsCodecTypeAudio() bool {
-	return c.inner.codec_type == C.AVMEDIA_TYPE_AUDIO
-}
-
-func (c *CodecParameters) ToAudioInfo() AudioInfo {
-	return AudioInfo{
-		SampleFmt:  C.enum_AVSampleFormat(c.inner.format),
-		SampleRate: int(c.inner.sample_rate),
-		Channels:   int(c.inner.ch_layout.nb_channels),
-		frameSize:  int(c.inner.frame_size),
-	}
-}
-
-func CreateAVStream(codecParameters unsafe.Pointer, num, den, streamIndex int) (Stream, bool) {
-	params := (*C.AVCodecParameters)(codecParameters)
+func CreateAVStream(codecParameters CodecParameters, num, den, streamIndex int) (Stream, bool) {
+	params := (*C.AVCodecParameters)(codecParameters.inner)
 	if params == nil {
 		return Stream{}, false
 	}

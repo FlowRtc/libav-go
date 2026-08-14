@@ -9,7 +9,6 @@ package libav
 #include <libavutil/rational.h>
 #include <libavutil/error.h>
 #include <string.h>
-#include "libtranscode.h"
 
 static inline const char *av_err2str_wrapper(int errnum) { return av_err2str(AVERROR(errnum)); }
 */
@@ -64,7 +63,7 @@ func WrapAVPacket(avpkt unsafe.Pointer) Packet {
 
 func (p *Packet) Ref() (Packet, error) {
 	id := int(global_id.Add(1))
-	pkt := C.av_packet_clone(p.AVPacket())
+	pkt := C.av_packet_clone((*C.AVPacket)(p.Inner()))
 	if pkt == nil {
 		return Packet{}, ErrOOM
 	}
@@ -77,11 +76,7 @@ func (p *Packet) Unref() {
 	C.av_packet_unref(p.inner)
 }
 
-func (p *Packet) AVPacket() *C.AVPacket {
-	return p.inner
-}
-
-func (p*Packet) Inner () unsafe.Pointer{
+func (p *Packet) Inner() unsafe.Pointer {
 	return unsafe.Pointer(p.inner)
 }
 

@@ -1,4 +1,4 @@
-package libav 
+package libav
 
 /*
 #cgo pkg-config: libavcodec libavformat libavutil
@@ -8,7 +8,6 @@ package libav
 #include <libavformat/avformat.h>
 #include <libavutil/rational.h>
 #include <string.h>
-#include "libtranscode.h"
 */
 import "C"
 
@@ -18,6 +17,7 @@ import (
 	"unsafe"
 )
 
+var ErrOOM error = errors.New("allocation failure OOM!")
 var ErrAvFrameRef error = errors.New("failed to ref avframe!")
 
 type Frame struct {
@@ -31,11 +31,13 @@ func NewFrame() (Frame, error) {
 	}
 	return Frame{frame}, nil
 }
-func (f Frame) Inner() unsafe.Pointer {
-	return unsafe.Pointer(f.inner)
-}
+
 func WrapFrame(f unsafe.Pointer) Frame {
 	return Frame{(*C.AVFrame)(f)}
+}
+
+func (f Frame) Inner() unsafe.Pointer {
+	return unsafe.Pointer(f.inner)
 }
 
 func NewEmptyAudioFrame(

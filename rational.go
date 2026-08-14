@@ -1,3 +1,20 @@
+package libav
+
+/*
+#cgo pkg-config: libavcodec libavformat libavutil
+#include <libavcodec/packet.h>
+#include <libavcodec/codec_par.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/rational.h>
+#include <libavutil/error.h>
+#include <string.h>
+
+static inline const char *av_err2str_wrapper(int errnum) { return av_err2str(AVERROR(errnum)); }
+*/
+import "C"
+
+import "unsafe"
 
 type Rational struct {
 	inner C.AVRational
@@ -34,4 +51,14 @@ func (r Rational) Num() int {
 
 func (r Rational) Den() int {
 	return int(r.inner.den)
+}
+
+func AvErrorString(errnum int) string {
+	return C.GoString(C.av_err2str_wrapper((C.int)(errnum)))
+}
+
+// a * b / c
+func RescaleQ(a int64, b, c Rational) int64 {
+	res := C.av_rescale_q(C.int64_t(a), b.AVRational(), c.AVRational())
+	return int64(res)
 }

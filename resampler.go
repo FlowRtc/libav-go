@@ -17,7 +17,7 @@ type AudioInfo struct {
 	SampleFmt  C.enum_AVSampleFormat
 	SampleRate int
 	Channels   int
-	frameSize  int
+	FrameSize  int
 }
 
 type Resampler struct {
