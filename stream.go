@@ -19,7 +19,7 @@ type Stream struct {
 	inner *C.AVStream
 }
 
-func CreateAVStream(codecParameters CodecParameters, num, den, streamIndex int) (Stream, bool) {
+func NewAVStream(codecParameters CodecParameters, num, den, streamIndex int) (Stream, bool) {
 	params := (*C.AVCodecParameters)(codecParameters.inner)
 	if params == nil {
 		return Stream{}, false
@@ -75,4 +75,8 @@ func (s *Stream) IsCodecTypeVideo() bool {
 
 func (s *Stream) IsCodecTypeAudio() bool {
 	return s.inner.codecpar.codec_type == C.AVMEDIA_TYPE_AUDIO
+}
+
+func (s *Stream) CodecParameters() CodecParameters {
+	return NewCodecParamters(unsafe.Pointer(s.inner.codecpar))
 }
