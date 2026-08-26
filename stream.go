@@ -59,8 +59,8 @@ func WrapAVStream(stream unsafe.Pointer) Stream {
 	}
 }
 
-func (s *Stream) AVStream() *C.AVStream {
-	return s.inner
+func (s *Stream) Inner() unsafe.Pointer {
+	return unsafe.Pointer(s.inner)
 }
 func (s *Stream) Index() int {
 	return int(s.inner.index)
@@ -79,4 +79,7 @@ func (s *Stream) IsCodecTypeAudio() bool {
 
 func (s *Stream) CodecParameters() CodecParameters {
 	return NewCodecParamters(unsafe.Pointer(s.inner.codecpar))
+}
+func (s *Stream) Timebase() Rational {
+	return AVRational(unsafe.Pointer(&s.inner.time_base))
 }
