@@ -100,11 +100,11 @@ func (p *Packet) SetDts(dts int64) {
 	p.inner.dts = (C.int64_t)(dts)
 }
 
-func (p *Packet) StreamIndex(index int) {
+func (p *Packet) SetStreamIndex(index int) {
 	p.inner.stream_index = (C.int)(index)
 }
 
-func (p *Packet) GetStreamIndex() int {
+func (p *Packet) StreamIndex() int {
 	return (int)(p.inner.stream_index)
 }
 
