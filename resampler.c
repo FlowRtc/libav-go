@@ -90,9 +90,8 @@ AudioFifo audio_fifo_init(AudioInfo *out, size_t min_samples) {
   AVFrame *frame = av_frame_alloc();
   assert(frame != NULL && "failed to allocate avframe!");
 
-  // todo change this to 1024 or smth idk
-  // max is AUDIO_FIFO_SIZE_TYP_SHI but this is only for
-  // allocation
+  // this is needed because av_frame_get_buffer and audio fifo requires
+  // us to allocate the buffer
   frame->nb_samples = AUDIO_FIFO_SIZE_TYP_SHI;
   frame->format = out->sample_fmt;
   frame->ch_layout = out->ch_layout;

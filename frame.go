@@ -129,5 +129,8 @@ func (f *Frame) Width() int {
 
 func (f *Frame) IsValid() bool {
 	return f.inner != nil
+}
 
+func (f *Frame) FrameSize() int {
+	return int(f.inner.sample_rate)
 }

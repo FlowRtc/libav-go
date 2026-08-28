@@ -34,6 +34,7 @@ func DefaultOpusInfo() AudioInfo {
 		SampleFmt:  C.AV_SAMPLE_FMT_FLTP,
 		SampleRate: 48000,
 		Channels:   2,
+		FrameSize:  960,
 	}
 }
 
@@ -42,6 +43,7 @@ func DefaultAACInfo() AudioInfo {
 		SampleFmt:  C.AV_SAMPLE_FMT_FLTP,
 		SampleRate: 48000,
 		Channels:   2,
+		FrameSize:  1024,
 	}
 }
 
