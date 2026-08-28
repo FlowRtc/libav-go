@@ -42,7 +42,7 @@ func (f Frame) Inner() unsafe.Pointer {
 
 func NewEmptyAudioFrame(
 	nb_samples int,
-	sample_fmt int,
+	sample_fmt SampleFormat,
 	channels int,
 ) (Frame, error) {
 	frame := C.av_frame_alloc()
@@ -96,12 +96,12 @@ func (f *Frame) Free() {
 	C.av_frame_free(&f.inner)
 }
 
-func (f *Frame) ExtendedData() (**C.uint8_t, int) {
+func (f *Frame) ExtendedData() (SampleData, int) {
 	if f == nil || f.inner == nil {
 		return nil, -1
 	}
 
-	return f.inner.extended_data, int(f.inner.nb_samples)
+	return toSampleData(f.inner.extended_data, int(f.inner.ch_layout.nb_channels)), int(f.inner.nb_samples)
 }
 
 func (f *Frame) SetKeyFrame() {

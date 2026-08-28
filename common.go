@@ -26,10 +26,12 @@ const (
 	CodecIdAAC          = C.AV_CODEC_ID_AAC
 )
 
-type AudioFormat C.int
+// AudioFormat is a Go-native alias for SampleFormat, retained for backward
+// compatibility with the original SetAudio signature.
+type AudioFormat = SampleFormat
 
-const AudioFmtS16 AudioFormat = C.AV_SAMPLE_FMT_S16
-const AudioFmtFltp AudioFormat = C.AV_SAMPLE_FMT_FLTP
+const AudioFmtS16 AudioFormat = SampleFmtS16
+const AudioFmtFltp AudioFormat = SampleFmtFLTP
 
 func GetCodecName(codec_id uint32) string {
 	return C.GoString(C.avcodec_get_name(codec_id))

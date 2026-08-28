@@ -27,6 +27,17 @@ type Packet struct {
 
 var global_id atomic.Int32
 
+// NewRawPacket allocates an empty AVPacket (no data buffer). Used as a reusable
+// output packet for encoders.
+func NewRawPacket() (Packet, error) {
+	id := int(global_id.Add(1))
+	av_pkt := C.av_packet_alloc()
+	if av_pkt == nil {
+		return Packet{}, ErrOOM
+	}
+	return Packet{av_pkt, nil, id}, nil
+}
+
 func NewPacket(data []byte, pts uint64, is_key_frame bool) (Packet, error) {
 	id := int(global_id.Add(1))
 

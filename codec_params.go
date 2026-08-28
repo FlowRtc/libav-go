@@ -38,6 +38,10 @@ func (c *CodecParameters) Id() CodecID {
 	return CodecID(c.inner.codec_id)
 }
 
+func (c *CodecParameters) GetCodecType() MediaType {
+	return GetCodecType(c.Id())
+}
+
 func (c *CodecParameters) IdRaw() int {
 	return int(c.inner.codec_id)
 }
@@ -58,11 +62,23 @@ func (c *CodecParameters) Width() int {
 
 func (c *CodecParameters) ToAudioInfo() AudioInfo {
 	return AudioInfo{
-		SampleFmt:  C.enum_AVSampleFormat(c.inner.format),
+		SampleFmt:  SampleFormat(c.inner.format),
 		SampleRate: int(c.inner.sample_rate),
 		Channels:   int(c.inner.ch_layout.nb_channels),
 		FrameSize:  int(c.inner.frame_size),
 	}
+}
+
+func (c *CodecParameters) SampleFormat() SampleFormat {
+	return SampleFormat(c.inner.format)
+}
+
+func (c *CodecParameters) SampleRate() int {
+	return int(c.inner.sample_rate)
+}
+
+func (c *CodecParameters) BitRate() int {
+	return int(c.inner.bit_rate)
 }
 
 func (c *CodecParameters) SetExtadata(data []byte) {
