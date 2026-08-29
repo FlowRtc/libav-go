@@ -91,6 +91,10 @@ func (c *CodecParameters) Inner() unsafe.Pointer {
 	return unsafe.Pointer(c.inner)
 }
 
+func (c *CodecParameters) FrameSize() int {
+	return int(c.inner.frame_size)
+}
+
 func (p *CodecParameters) SetVideo(codec CodecID, width, height, bitrate int) {
 	p.inner.codec_type = C.AVMEDIA_TYPE_VIDEO
 	p.inner.codec_id = C.enum_AVCodecID(codec)

@@ -24,11 +24,6 @@ func NewAVStream(codecParameters CodecParameters, num, den, streamIndex int) (St
 	if params == nil {
 		return Stream{}, false
 	}
-	defer func() {
-		params.extradata = nil
-		params.extradata_size = 0
-		C.avcodec_parameters_free(&params)
-	}()
 
 	stream := (*C.AVStream)(C.av_mallocz(C.size_t(unsafe.Sizeof(C.AVStream{}))))
 	if stream == nil {
@@ -42,7 +37,6 @@ func NewAVStream(codecParameters CodecParameters, num, den, streamIndex int) (St
 	}
 
 	if C.avcodec_parameters_copy(stream.codecpar, params) < 0 {
-		C.avcodec_parameters_free(&stream.codecpar)
 		C.av_free(unsafe.Pointer(stream))
 		return Stream{}, false
 	}
