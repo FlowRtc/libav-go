@@ -114,14 +114,14 @@ func (c CodecContext) SendFrame(f unsafe.Pointer) int {
 
 func (c CodecContext) ReceiveFrame(f *Frame) int {
 	if f == nil || f.inner == nil {
-		return -1
+		panic("packet is nil bru we can't read for shit")
 	}
 	return int(C.avcodec_receive_frame(c.inner, f.inner))
 }
 
 func (c CodecContext) ReceivePacket(p *Packet) int {
 	if p == nil || p.inner == nil {
-		return -1
+		panic("packet is nil bru we can't read for shit")
 	}
 	return int(C.avcodec_receive_packet(c.inner, p.inner))
 }
