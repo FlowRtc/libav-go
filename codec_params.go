@@ -26,41 +26,41 @@ func NewCodecParamters(params unsafe.Pointer) CodecParameters {
 	return CodecParameters{(*C.AVCodecParameters)(params)}
 }
 
-func (c *CodecParameters) IsCodecTypeVideo() bool {
+func (c CodecParameters) IsCodecTypeVideo() bool {
 	return c.inner.codec_type == C.AVMEDIA_TYPE_VIDEO
 }
 
-func (c *CodecParameters) IsCodecTypeAudio() bool {
+func (c CodecParameters) IsCodecTypeAudio() bool {
 	return c.inner.codec_type == C.AVMEDIA_TYPE_AUDIO
 }
 
-func (c *CodecParameters) Id() CodecID {
+func (c CodecParameters) Id() CodecID {
 	return CodecID(c.inner.codec_id)
 }
 
-func (c *CodecParameters) GetCodecType() MediaType {
+func (c CodecParameters) GetCodecType() MediaType {
 	return GetCodecType(c.Id())
 }
 
-func (c *CodecParameters) IdRaw() int {
+func (c CodecParameters) IdRaw() int {
 	return int(c.inner.codec_id)
 }
 
-func (c *CodecParameters) SetHeight(height int) {
+func (c CodecParameters) SetHeight(height int) {
 	c.inner.height = C.int(height)
 }
-func (c *CodecParameters) SetWidth(width int) {
+func (c CodecParameters) SetWidth(width int) {
 	c.inner.width = C.int(width)
 }
 
-func (c *CodecParameters) Height() int {
+func (c CodecParameters) Height() int {
 	return int(c.inner.height)
 }
-func (c *CodecParameters) Width() int {
+func (c CodecParameters) Width() int {
 	return int(c.inner.width)
 }
 
-func (c *CodecParameters) ToAudioInfo() AudioInfo {
+func (c CodecParameters) ToAudioInfo() AudioInfo {
 	return AudioInfo{
 		SampleFmt:  SampleFormat(c.inner.format),
 		SampleRate: int(c.inner.sample_rate),
@@ -69,15 +69,15 @@ func (c *CodecParameters) ToAudioInfo() AudioInfo {
 	}
 }
 
-func (c *CodecParameters) SampleFormat() SampleFormat {
+func (c CodecParameters) SampleFormat() SampleFormat {
 	return SampleFormat(c.inner.format)
 }
 
-func (c *CodecParameters) SampleRate() int {
+func (c CodecParameters) SampleRate() int {
 	return int(c.inner.sample_rate)
 }
 
-func (c *CodecParameters) BitRate() int {
+func (c CodecParameters) BitRate() int {
 	return int(c.inner.bit_rate)
 }
 
@@ -87,11 +87,11 @@ func (c *CodecParameters) SetExtadata(data []byte) {
 	p.extradata_size = C.int(len(data))
 }
 
-func (c *CodecParameters) Inner() unsafe.Pointer {
+func (c CodecParameters) Inner() unsafe.Pointer {
 	return unsafe.Pointer(c.inner)
 }
 
-func (c *CodecParameters) FrameSize() int {
+func (c CodecParameters) FrameSize() int {
 	return int(c.inner.frame_size)
 }
 
