@@ -198,7 +198,6 @@ func NewFIFO(info AudioInfo, minSamples int) AudioFifo {
 	frame.inner.nb_samples = C.int(audioFifoSize)
 	frame.inner.format = C.int(info.SampleFmt)
 	frame.inner.ch_layout = layout
-	frame.inner.pts = 0
 
 	if C.av_frame_get_buffer(frame.inner, 0) != 0 {
 		frame.Free()
