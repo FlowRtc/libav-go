@@ -109,28 +109,47 @@ func (f *Frame) SetKeyFrame() {
 	// f.inner.key_frame = 1
 }
 
-func (f *Frame) Pts() int64 {
+func (f Frame) Pts() int64 {
 	return int64(f.inner.pts)
 }
 
-func (f *Frame) SetPts(pts int64) {
+func (f Frame) SetPts(pts int64) {
 	f.inner.pts = C.int64_t(pts)
 }
 
-func (f *Frame) NbSamples() int64 {
+func (f Frame) NbSamples() int64 {
 	return int64(f.inner.nb_samples)
 }
-func (f *Frame) Height() int {
+func (f Frame) Height() int {
 	return int(f.inner.height)
 }
-func (f *Frame) Width() int {
+func (f Frame) Width() int {
 	return int(f.inner.width)
 }
 
-func (f *Frame) IsValid() bool {
+func (f Frame) IsValid() bool {
 	return f.inner != nil
 }
 
-func (f *Frame) FrameSize() int {
+func (f Frame) FrameSize() int {
 	return int(f.inner.sample_rate)
+}
+func (f Frame) Format() SampleFormat {
+	return SampleFormat(f.inner.format)
+}
+func (f Frame) SampleRate() int {
+	return int(f.inner.sample_rate)
+}
+
+func (f Frame)NbChannels( ) int{
+	return int(f.inner.ch_layout.nb_channels)
+}
+
+func (f Frame) ToAudioInfo() AudioInfo {
+	return AudioInfo{
+		SampleFmt:  f.Format(),
+		SampleRate: f.SampleRate(),
+		Channels:   f.NbChannels(),
+		FrameSize:  f.FrameSize(),
+	}
 }
