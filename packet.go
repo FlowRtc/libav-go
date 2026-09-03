@@ -68,6 +68,10 @@ func NewPacketRef(avpkt unsafe.Pointer) (Packet, error) {
 	// fmt.Println("new packet with id ", id)
 	return Packet{inner: pkt, id: id}, nil
 }
+
+func NewEofPacket() Packet {
+	return WrapAVPacket(nil)
+}
 func WrapAVPacket(avpkt unsafe.Pointer) Packet {
 	return Packet{inner: (*C.AVPacket)(avpkt), data: []byte{}, id: 0}
 }
@@ -146,11 +150,11 @@ func (p *Packet) IsValid() bool {
 }
 
 func (p *Packet) IsEAgain() bool {
-	return p.inner == nil
+	return uintptr(unsafe.Pointer(p.inner)) == ^uintptr(0)
 }
 
 func (p *Packet) IsEof() bool {
-	return uintptr(unsafe.Pointer(p.inner)) == ^uintptr(0)
+	return p.inner == nil
 }
 
 func (p *Packet) Dts() int64 {
