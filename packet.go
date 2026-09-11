@@ -58,7 +58,14 @@ func NewPacket(data []byte, pts uint64, is_key_frame bool) (Packet, error) {
 	// fmt.Println("new packet with id ", id)
 	return Packet{av_pkt, data, id}, nil // hold the data so that the gc can track it
 }
+func NewPacketAlloc() (Packet, error) {
+	av_pkt := C.av_packet_alloc()
+	if av_pkt == nil {
+		return Packet{}, ErrOOM
+	}
 
+	return Packet{inner: av_pkt}, nil
+}
 func NewPacketRef(avpkt unsafe.Pointer) (Packet, error) {
 	id := int(global_id.Add(1))
 	pkt := C.av_packet_clone((*C.AVPacket)(avpkt))
@@ -102,6 +109,13 @@ func (p *Packet) Free() {
 
 func (p *Packet) Data() []byte {
 	return unsafe.Slice((*byte)(p.inner.data), p.inner.size)
+}
+
+func (p *Packet) TimeBase() Rational {
+	return AVRational(unsafe.Pointer(&p.inner.time_base))
+}
+func (p *Packet) SetTimeBase(timebase Rational) {
+	p.inner.time_base = timebase.AVRational()
 }
 
 func (p *Packet) Pts() int64 {
@@ -154,7 +168,7 @@ func (p *Packet) IsEAgain() bool {
 }
 
 func (p *Packet) IsEof() bool {
-	return p.inner == nil
+	return p.inner == nil || p.inner.data == nil
 }
 
 func (p *Packet) Dts() int64 {

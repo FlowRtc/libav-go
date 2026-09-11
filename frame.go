@@ -74,6 +74,9 @@ func NewEmptyAudioFrame(
 }
 
 func (f Frame) Ref() (Frame, error) {
+	if f.inner == nil {
+		return f, nil
+	}
 	ref, err := NewFrame()
 	if err != nil {
 		return ref, err
@@ -141,7 +144,7 @@ func (f Frame) SampleRate() int {
 	return int(f.inner.sample_rate)
 }
 
-func (f Frame)NbChannels( ) int{
+func (f Frame) NbChannels() int {
 	return int(f.inner.ch_layout.nb_channels)
 }
 
@@ -152,4 +155,8 @@ func (f Frame) ToAudioInfo() AudioInfo {
 		Channels:   f.NbChannels(),
 		FrameSize:  f.FrameSize(),
 	}
+}
+
+func ReadFrame(ctx AVFormatContext, pkt Packet) int {
+	return int(C.av_read_frame(ctx.inner, pkt.inner))
 }

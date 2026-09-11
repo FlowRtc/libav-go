@@ -71,6 +71,13 @@ func (s *Stream) IsCodecTypeAudio() bool {
 	return s.inner.codecpar.codec_type == C.AVMEDIA_TYPE_AUDIO
 }
 
+func (s *Stream) CodecType() int {
+	return int(s.inner.codecpar.codec_type)
+}
+func (s *Stream) CodecId() int {
+	return int(s.inner.codecpar.codec_id)
+}
+
 func (s *Stream) CodecParameters() CodecParameters {
 	return NewCodecParamters(unsafe.Pointer(s.inner.codecpar))
 }

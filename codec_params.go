@@ -7,6 +7,7 @@ package libav
 #include <libavformat/avformat.h>
 #include <libavutil/rational.h>
 #include <libavutil/error.h>
+#include <libavutil/mem.h>
 #include <string.h>
 */
 import "C"
@@ -83,11 +84,33 @@ func (c CodecParameters) BitRate() int {
 
 func (c *CodecParameters) SetExtadata(data []byte) {
 	p := c.inner
-	p.extradata = (*C.uint8_t)(&data[0])
+	if p.extradata != nil {
+		C.av_freep(unsafe.Pointer(&p.extradata))
+		p.extradata_size = 0
+	}
+	if len(data) == 0 {
+		return
+	}
+
+	// decoders read up to AV_INPUT_BUFFER_PADDING_SIZE bytes past extradata_size
+	buffer := C.av_mallocz(C.size_t(len(data)) + C.AV_INPUT_BUFFER_PADDING_SIZE)
+	if buffer == nil {
+		return
+	}
+	C.memcpy(buffer, unsafe.Pointer(&data[0]), C.size_t(len(data)))
+
+	p.extradata = (*C.uint8_t)(buffer)
 	p.extradata_size = C.int(len(data))
 }
 
-func (c CodecParameters) Inner() unsafe.Pointer {
+func (c *CodecParameters) Free() {
+	if c.inner == nil {
+		return
+	}
+	C.avcodec_parameters_free(&c.inner)
+}
+
+func (c *CodecParameters) Inner() unsafe.Pointer {
 	return unsafe.Pointer(c.inner)
 }
 
