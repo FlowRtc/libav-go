@@ -195,3 +195,6 @@ func (c CodecContext) SetPixelFormat(fmt PixelFormat) {
 func (c CodecContext) SetGOP(gop int) {
 	c.inner.gop_size = C.int(gop)
 }
+func AVCodecGetMediaType(codecId CodecID) {
+	C.avcodec_get_type(uint32(codecId))
+}
