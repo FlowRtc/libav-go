@@ -66,7 +66,6 @@ func (c CodecParameters) ToAudioInfo() AudioInfo {
 		SampleFmt:  SampleFormat(c.inner.format),
 		SampleRate: int(c.inner.sample_rate),
 		Channels:   int(c.inner.ch_layout.nb_channels),
-		FrameSize:  int(c.inner.frame_size),
 	}
 }
 

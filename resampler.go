@@ -24,26 +24,6 @@ type AudioInfo struct {
 	SampleFmt  SampleFormat
 	SampleRate int
 	Channels   int
-	FrameSize  int
-}
-
-func DefaultOpusInfo() AudioInfo {
-	// todo remove this and parse the opus frame to know the info bru
-	return AudioInfo{
-		SampleFmt:  SampleFmtFLTP,
-		SampleRate: 48000,
-		Channels:   2,
-		FrameSize:  960,
-	}
-}
-
-func DefaultAACInfo() AudioInfo {
-	return AudioInfo{
-		SampleFmt:  SampleFmtFLTP,
-		SampleRate: 48000,
-		Channels:   2,
-		FrameSize:  1024,
-	}
 }
 
 func NewAudioInfo(
@@ -77,6 +57,10 @@ func NewResampler(input, output AudioInfo) (Resampler, error) {
 	C.av_channel_layout_default(&inLayout, C.int(input.Channels))
 	outLayout := C.AVChannelLayout{}
 	C.av_channel_layout_default(&outLayout, C.int(output.Channels))
+
+	if input.SampleRate != output.SampleRate {
+		panic("we can't possibly handle this")
+	}
 
 	errorcode := int(C.swr_alloc_set_opts2(
 		&r.swr,
@@ -253,4 +237,8 @@ func (f *AudioFifo) Free() {
 		f.frame.Free()
 	}
 	f.minSamples = 0
+}
+
+func (f *AudioFifo) Size() int {
+	return int(C.av_audio_fifo_size(f.fifo))
 }
