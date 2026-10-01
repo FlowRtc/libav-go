@@ -8,6 +8,7 @@ package libav
 #include <libavformat/avformat.h>
 #include <libavutil/rational.h>
 #include <libavutil/mem.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 

@@ -58,6 +58,26 @@ func NewPacket(data []byte, pts uint64, is_key_frame bool) (Packet, error) {
 	// fmt.Println("new packet with id ", id)
 	return Packet{av_pkt, data, id}, nil // hold the data so that the gc can track it
 }
+
+func (p *Packet) Set(data []byte, pts int64, is_key_frame bool) {
+	p.inner.data = (*C.uint8_t)(unsafe.Pointer(&data[0]))
+
+	p.inner.size = C.int(len(data))
+	p.SetPts(pts)
+	p.SetDts(pts)
+
+	if is_key_frame {
+		p.inner.flags |= C.AV_PKT_FLAG_KEY
+	}
+}
+
+func (p *Packet) Reset() {
+	p.inner.data = nil
+	p.inner.size = C.int(0)
+	p.SetPts(NoPTSValue)
+	p.SetDts(NoPTSValue)
+	p.inner.flags = 0
+}
 func NewPacketAlloc() (Packet, error) {
 	av_pkt := C.av_packet_alloc()
 	if av_pkt == nil {
