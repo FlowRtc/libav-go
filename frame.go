@@ -90,6 +90,48 @@ func (f Frame) Ref() (Frame, error) {
 	}
 	return ref, nil
 }
+func (f Frame) Copy() (Frame, error) {
+	if f.inner == nil {
+		return f, nil
+	}
+
+	copied, err := NewFrame()
+	if err != nil {
+		return copied, err
+	}
+
+	// Copy frame properties
+	errcode := C.av_frame_copy_props(copied.inner, f.inner)
+	if errcode < 0 {
+		copied.Free()
+		return copied, fmt.Errorf("%w: failed to copy props (%d) %s", ErrAvFrameRef,
+			int(errcode),
+			AvErrorString(int(errcode)))
+	}
+
+	copied.inner.format = f.inner.format
+	copied.inner.nb_samples = f.inner.nb_samples
+	copied.inner.ch_layout = f.inner.ch_layout
+	// Allocate new buffers
+	errcode = C.av_frame_get_buffer(copied.inner, 0)
+	if errcode < 0 {
+		copied.Free()
+		return copied, fmt.Errorf("%w: failed to allocate buffers (%d) %s", ErrAvFrameRef,
+			int(errcode),
+			AvErrorString(int(errcode)))
+	}
+
+	// Copy actual buffer data
+	errcode = C.av_frame_copy(copied.inner, f.inner)
+	if errcode < 0 {
+		copied.Free()
+		return copied, fmt.Errorf("%w: failed to copy data (%d) %s", ErrAvFrameRef,
+			int(errcode),
+			AvErrorString(int(errcode)))
+	}
+
+	return copied, nil
+}
 
 func (f Frame) Unref() {
 	C.av_frame_unref(f.inner)
@@ -134,9 +176,6 @@ func (f Frame) IsValid() bool {
 	return f.inner != nil
 }
 
-func (f Frame) FrameSize() int {
-	return int(f.inner.sample_rate)
-}
 func (f Frame) Format() SampleFormat {
 	return SampleFormat(f.inner.format)
 }
@@ -153,7 +192,6 @@ func (f Frame) ToAudioInfo() AudioInfo {
 		SampleFmt:  f.Format(),
 		SampleRate: f.SampleRate(),
 		Channels:   f.NbChannels(),
-		FrameSize:  f.FrameSize(),
 	}
 }
 
